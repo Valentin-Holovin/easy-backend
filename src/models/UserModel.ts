@@ -38,4 +38,9 @@ export class UserModel {
     const db = await initDB();
     await db.run("UPDATE users SET name = ? WHERE id = ?", [name, id]);
   }
+
+  static async deletePhoto(id: number): Promise<void> {
+    const db = await initDB();
+    await db.run("UPDATE users SET photo = NULL WHERE id = ?", [id]);
+  }
 }

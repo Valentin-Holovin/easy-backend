@@ -16,5 +16,6 @@ router.post(
   UserController.updatePhoto
 );
 router.post("/update-name", authMiddleware, UserController.updateName);
+router.delete("/delete-photo", authMiddleware, UserController.deletePhoto);
 
 export default router;

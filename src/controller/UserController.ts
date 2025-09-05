@@ -238,4 +238,46 @@ export class UserController {
       res.status(500).json({ errors: ["Internal server error"] });
     }
   }
+
+  static async deletePhoto(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ errors: ["User not authenticated"] });
+      }
+
+      const userId = req.user.id;
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ errors: ["User not found"] });
+      }
+
+      if (!user.photo) {
+        return res.status(400).json({ errors: ["No photo to delete"] });
+      }
+
+      const photoPath = path.join(__dirname, "../../Uploads", user.photo);
+      try {
+        await fs.unlink(photoPath);
+      } catch (err) {
+        console.warn(`Failed to delete photo: ${photoPath}`, err);
+      }
+
+      await UserModel.deletePhoto(userId);
+
+      res.json({
+        success: true,
+        message: "Photo deleted successfully",
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          photo: null,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ errors: ["Internal server error"] });
+    }
+  }
 }
