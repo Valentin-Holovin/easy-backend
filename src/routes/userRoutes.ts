@@ -9,5 +9,11 @@ router.post("/register", upload.single("photo"), UserController.register);
 router.post("/signin", UserController.signIn);
 router.post("/logout", UserController.logout);
 router.get("/profile", authMiddleware, UserController.getProfile);
+router.post(
+  "/update-photo",
+  authMiddleware,
+  upload.single("photo"),
+  UserController.updatePhoto
+);
 
 export default router;

@@ -4,8 +4,11 @@ import bcrypt from "bcrypt";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import { AuthRequest } from "../middlewares/auth";
+import path from "path";
+import fs from "fs/promises";
+import { DEV_URL } from "..";
 
-const JWT_SECRET = "super_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
 const JWT_EXPIRES = "1h";
 
 export class UserController {
@@ -120,13 +123,59 @@ export class UserController {
         return res.status(404).json({ errors: ["User not found"] });
       }
 
-      const photoUrl = user.photo
-        ? `http://localhost:5001/uploads/${user.photo}`
-        : null;
+      const photoUrl = user.photo ? `${DEV_URL}/uploads/${user.photo}` : null;
 
       res.json({
         success: true,
         message: "Profile retrieved successfully",
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          photo: photoUrl,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ errors: ["Internal server error"] });
+    }
+  }
+
+  static async updatePhoto(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ errors: ["User not authenticated"] });
+      }
+
+      const userId = req.user.id;
+
+      if (!req.file) {
+        return res.status(400).json({ errors: ["No photo uploaded"] });
+      }
+
+      const newPhoto = req.file.filename;
+
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ errors: ["User not found"] });
+      }
+
+      if (user.photo) {
+        const oldPhotoPath = path.join(__dirname, "../../uploads", user.photo);
+        try {
+          await fs.unlink(oldPhotoPath);
+        } catch (err) {
+          console.warn(`Failed to delete old photo: ${oldPhotoPath}`, err);
+        }
+      }
+
+      await UserModel.updatePhoto(userId, newPhoto);
+
+      const photoUrl = `${DEV_URL}/uploads/${newPhoto}`;
+
+      res.json({
+        success: true,
+        message: "Photo updated successfully",
         data: {
           id: user.id,
           name: user.name,

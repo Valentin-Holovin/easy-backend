@@ -1,4 +1,3 @@
-// src/middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
@@ -11,7 +10,7 @@ export interface AuthRequest extends Request {
   user?: JwtPayload;
 }
 
-const SECRET_KEY = "super_secret_key";
+const SECRET_KEY = process.env.SECRET_KEY || "super_secret_key";
 
 const authMiddleware = (
   req: AuthRequest,
