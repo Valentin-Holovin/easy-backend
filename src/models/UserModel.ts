@@ -21,4 +21,11 @@ export class UserModel {
     const db = await initDB();
     return db.get("SELECT * FROM users WHERE email = ?", [email]);
   }
+
+  static async findById(id: number) {
+    const db = await initDB();
+    return db.get("SELECT id, name, email, photo FROM users WHERE id = ?", [
+      id,
+    ]);
+  }
 }

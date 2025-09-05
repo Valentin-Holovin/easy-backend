@@ -3,6 +3,7 @@ import { UserModel } from "../models/UserModel";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import jwt from "jsonwebtoken";
+import { AuthRequest } from "../middlewares/auth";
 
 const JWT_SECRET = "super_secret_key";
 const JWT_EXPIRES = "1h";
@@ -100,6 +101,39 @@ export class UserController {
   static async logout(req: Request, res: Response) {
     try {
       res.json({ success: true, message: "Logged out successfully" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ errors: ["Internal server error"] });
+    }
+  }
+
+  static async getProfile(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ errors: ["User not authenticated"] });
+      }
+
+      const userId = req.user.id;
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ errors: ["User not found"] });
+      }
+
+      const photoUrl = user.photo
+        ? `http://localhost:5001/uploads/${user.photo}`
+        : null;
+
+      res.json({
+        success: true,
+        message: "Profile retrieved successfully",
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          photo: photoUrl,
+        },
+      });
     } catch (err) {
       console.error(err);
       res.status(500).json({ errors: ["Internal server error"] });
