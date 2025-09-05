@@ -6,5 +6,6 @@ const router = Router();
 
 router.post("/register", upload.single("photo"), UserController.register);
 router.post("/signin", UserController.signIn);
+router.post("/logout", UserController.logout);
 
 export default router;

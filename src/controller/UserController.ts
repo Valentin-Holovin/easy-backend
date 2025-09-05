@@ -97,4 +97,12 @@ export class UserController {
       res.status(500).json({ errors: ["Internal server error"] });
     }
   }
+  static async logout(req: Request, res: Response) {
+    try {
+      res.json({ success: true, message: "Logged out successfully" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ errors: ["Internal server error"] });
+    }
+  }
 }
