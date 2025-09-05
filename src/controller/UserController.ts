@@ -11,6 +11,10 @@ import { DEV_URL } from "..";
 const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
 const JWT_EXPIRES = "1h";
 
+interface UpdateNameRequestBody {
+  name: string;
+}
+
 export class UserController {
   static async register(req: Request, res: Response) {
     try {
@@ -179,6 +183,52 @@ export class UserController {
         data: {
           id: user.id,
           name: user.name,
+          email: user.email,
+          photo: photoUrl,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ errors: ["Internal server error"] });
+    }
+  }
+
+  static async updateName(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ errors: ["User not authenticated"] });
+      }
+
+      const userId = req.user.id;
+      const { name } = req.body as UpdateNameRequestBody;
+
+      const errors: string[] = [];
+
+      if (!name) {
+        errors.push("Name is required");
+      } else if (name.length < 3) {
+        errors.push("Name must be at least 3 characters long");
+      }
+
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
+      }
+
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ errors: ["User not found"] });
+      }
+
+      await UserModel.updateName(userId, name);
+
+      const photoUrl = user.photo ? `${DEV_URL}/uploads/${user.photo}` : null;
+
+      res.json({
+        success: true,
+        message: "Name updated successfully",
+        data: {
+          id: user.id,
+          name: name,
           email: user.email,
           photo: photoUrl,
         },

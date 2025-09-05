@@ -15,5 +15,6 @@ router.post(
   upload.single("photo"),
   UserController.updatePhoto
 );
+router.post("/update-name", authMiddleware, UserController.updateName);
 
 export default router;

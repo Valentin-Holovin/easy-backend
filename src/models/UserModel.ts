@@ -33,4 +33,9 @@ export class UserModel {
     const db = await initDB();
     await db.run("UPDATE users SET photo = ? WHERE id = ?", [photo, id]);
   }
+
+  static async updateName(id: number, name: string): Promise<void> {
+    const db = await initDB();
+    await db.run("UPDATE users SET name = ? WHERE id = ?", [name, id]);
+  }
 }
