@@ -56,7 +56,17 @@ export class UserController {
 
       await UserModel.create({ name, email, password: hashedPassword, photo });
 
-      res.json({ success: true, message: "User registered successfully" });
+      const user = await UserModel.findByEmail(email);
+
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+        expiresIn: JWT_EXPIRES,
+      });
+
+      res.json({
+        success: true,
+        message: "User registered successfully",
+        token,
+      });
     } catch (err) {
       console.error(err);
       res.status(500).json({ errors: ["Internal server error"] });
